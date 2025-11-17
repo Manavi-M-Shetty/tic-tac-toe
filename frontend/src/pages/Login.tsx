@@ -2,6 +2,16 @@ import { useState } from 'react';
 import API from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
 
+// Helper to decode JWT and extract user ID
+function decodeToken(token: string) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.id;
+  } catch {
+    return null;
+  }
+}
+
 export default function Login() {
   const [username,setUsername] = useState('');
   const [password,setPassword] = useState('');
@@ -11,7 +21,10 @@ export default function Login() {
     e.preventDefault();
     try {
       const r = await API.post('/auth/login', { username, password });
-      localStorage.setItem('token', r.data.token);
+      const token = r.data.token;
+      localStorage.setItem('token', token);
+      const uid = decodeToken(token);
+      if (uid) localStorage.setItem('uid', String(uid));
       nav('/lobby');
     } catch (err: any) {
       alert(err?.response?.data?.error || 'Login failed');
