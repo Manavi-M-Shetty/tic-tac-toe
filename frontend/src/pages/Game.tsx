@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api','') || 'http://localhost:4000';
@@ -9,9 +9,15 @@ function getUserId() { return Number(localStorage.getItem('uid')) || null; }
 
 export default function Game(){
   const { id } = useParams();
+  const nav = useNavigate();
   const [game, setGame] = useState<any>(null);
   const [socket, setSocket] = useState<any>(null);
   const userId = getUserId();
+
+  function exitGame() {
+    socket?.disconnect();
+    nav('/lobby');
+  }
 
   useEffect(() => {
     const s = io(API_BASE);
@@ -77,6 +83,7 @@ export default function Game(){
             {game.winner === 'draw' ? '🎲 Draw!' : `🎉 ${game.winner} wins!`}
           </div>
         )}
+        <button className="mt-4 px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700" onClick={exitGame}>Exit Game</button>
       </div>
     </div>
   );

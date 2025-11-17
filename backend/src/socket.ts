@@ -74,8 +74,8 @@ export default function setupSocket(httpServer: any, allowedOrigin: string) {
         }
       }
       
-      // Determine next turn
-      const nextTurn = symbol === 'X' ? 'O' : 'X';
+      // Determine next turn: alternate based on current turn (NOT on symbol)
+      const nextTurn = game.current_turn === 'X' ? 'O' : 'X';
       
       let status = game.status;
       if (winner) {

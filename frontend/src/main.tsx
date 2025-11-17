@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Lobby from './pages/Lobby';
 import Game from './pages/Game';
+import ProtectedRoute from './components/ProtectedRoute';
 import './index.css'
 import './App.css'
 
@@ -15,10 +16,10 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/lobby" element={<App />}>
+        <Route path="/lobby" element={<ProtectedRoute><App /></ProtectedRoute>}>
           <Route index element={<Lobby />} />
         </Route>
-        <Route path="/game/:id" element={<App />}>
+        <Route path="/game/:id" element={<ProtectedRoute><App /></ProtectedRoute>}>
           <Route index element={<Game />} />
         </Route>
       </Routes>
