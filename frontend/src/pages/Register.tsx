@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import API from '../services/api';
+import API from '../services/api'; // Ensure this path is correct based on your file structure
 import { useNavigate, Link } from 'react-router-dom';
 
 /**
@@ -22,16 +22,7 @@ function decodeToken(token: string) {
 export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  // New state for non-blocking success/error messages
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | null }>({ text: '', type: null });
   const nav = useNavigate(); // Hook to change routes programmatically
-
-  // Helper to display messages without using window.alert
-  function showMessage(text: string, type: 'success' | 'error') {
-    setMessage({ text, type });
-    // Auto-clear message after 5 seconds
-    setTimeout(() => setMessage({ text: '', type: null }), 5000);
-  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent default form submission and page reload
@@ -50,78 +41,62 @@ export default function Register() {
       // 4. Store the user ID (useful for context/state management)
       if (uid) localStorage.setItem('uid', String(uid));
       
-      // Show success message and navigate
-      showMessage('Registration successful! Redirecting to lobby...', 'success');
-      
       // 5. Navigate to the game lobby
       nav('/lobby');
 
     } catch (err: any) {
       // Handle and display error from the backend (e.g., username already exists)
-      // Replaced alert() with showMessage()
-      showMessage(err?.response?.data?.error || 'Registration failed. Please try again.', 'error');
+      alert(err?.response?.data?.error || 'Registration failed. Please try again.');
     }
   };
 
   return (
-    // Full screen container to center the card. Uses a responsive, non-scrollable background.
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 sm:p-6">
+    // Full screen container to center the registration form
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
       
-      {/* Registration Card/Panel: Clean, rounded, minimal style */}
-      <div className="w-full max-w-sm p-8 space-y-6 bg-white rounded-2xl shadow-xl border border-gray-200">
+      {/* Registration Card/Panel */}
+      <div className="w-full max-w-sm p-8 space-y-6 bg-white rounded-xl shadow-2xl">
         
-        {/* Title: Large, bold, centered, matching the desired aesthetic */}
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 text-center leading-snug">
+        <h1 className="text-3xl font-extrabold text-gray-900 text-center">
           Create Account for Tic-Tac-Toe
         </h1>
-        
-        {/* Message Box (Intuitive feedback) */}
-        {message.text && (
-          <div className={`p-3 rounded-lg font-medium text-center ${
-            message.type === 'success' ? 'bg-green-100 text-green-700 border border-green-300' : 
-            'bg-red-100 text-red-700 border border-red-300'
-          }`}>
-            {message.text}
-          </div>
-        )}
-
 
         <form onSubmit={submit} className="space-y-4">
           
-          {/* Username Input: Increased padding, soft corners, and focus ring */}
+          {/* Username Input */}
           <input 
             value={username} 
             onChange={e => setUsername(e.target.value)} 
             required 
             placeholder="Choose Username" 
-            className="w-full p-4 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 focus:outline-none placeholder-gray-500 text-lg" 
-            aria-label="Choose Username"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 focus:outline-none" 
+            aria-label="Username"
           />
           
-          {/* Password Input: Increased padding, soft corners, and focus ring */}
+          {/* Password Input */}
           <input 
             value={password} 
             onChange={e => setPassword(e.target.value)} 
             required 
             type="password" 
             placeholder="Choose Password" 
-            className="w-full p-4 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 focus:outline-none placeholder-gray-500 text-lg" 
-            aria-label="Choose Password"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 focus:outline-none" 
+            aria-label="Password"
           />
           
-          {/* Register Button: Green primary action, large, bold, and responsive effects */}
+          {/* Register Button */}
           <button 
             type="submit"
-            className="w-full py-3 text-xl font-bold bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition duration-200 transform active:bg-green-800"
+            className="w-full px-4 py-3 text-lg font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 shadow-md active:bg-green-800"
           >
             Start Playing!
           </button>
         </form>
 
-        {/* Login Link: Centered, small text for consistency */}
-        <div className="pt-2 text-center text-md text-gray-600">
+        {/* Login Link */}
+        <div className="mt-6 text-center text-sm">
           Already have an account? 
-          <Link to="/" className="text-blue-600 hover:text-blue-800 font-semibold ml-1 transition duration-150">
+          <Link to="/" className="text-blue-600 hover:text-blue-800 font-medium ml-1">
             Login
           </Link>
         </div>
