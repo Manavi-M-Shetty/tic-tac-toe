@@ -1,13 +1,17 @@
 import { useState } from 'react';
-import API from '../services/api'; 
+import API from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
 
 /**
  * Helper function to decode a JWT and extract the user ID ('id' field from payload).
+ * @param token The JWT string.
+ * @returns The user ID as a string, or null if decoding fails.
  */
 function decodeToken(token: string) {
   try {
+    // A JWT is split into three parts by '.', the payload is the second part (index 1).
     const payloadBase64 = token.split('.')[1];
+    // Decode from Base64 (using atob) and parse the JSON.
     const payload = JSON.parse(atob(payloadBase64));
     return payload.id;
   } catch {
@@ -15,101 +19,111 @@ function decodeToken(token: string) {
   }
 }
 
-export default function Login() {
+export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const nav = useNavigate();
+  // New state for non-blocking success/error messages
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | null }>({ text: '', type: null });
+  const nav = useNavigate(); // Hook to change routes programmatically
+
+  // Helper to display messages without using window.alert
+  function showMessage(text: string, type: 'success' | 'error') {
+    setMessage({ text, type });
+    // Auto-clear message after 5 seconds
+    setTimeout(() => setMessage({ text: '', type: null }), 5000);
+  }
 
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission and page reload
     try {
-      const r = await API.post('/auth/login', { username, password });
+      // 1. Call the registration endpoint
+      const r = await API.post('/auth/register', { username, password });
+      
       const token = r.data.token;
       
+      // 2. Store the token in local storage for subsequent authenticated requests
       localStorage.setItem('token', token);
       
+      // 3. Decode the token to get the user ID
       const uid = decodeToken(token);
+      
+      // 4. Store the user ID (useful for context/state management)
       if (uid) localStorage.setItem('uid', String(uid));
       
-      // Navigate to the game lobby after successful login
-      nav('/lobby');
+      // Show success message and navigate
+      showMessage('Registration successful! Redirecting to lobby...', 'success');
       
+      // 5. Navigate to the game lobby
+      nav('/lobby');
+
     } catch (err: any) {
-      // Display error message from the backend
-      alert(err?.response?.data?.error || 'Login failed. Check your username and password.');
+      // Handle and display error from the backend (e.g., username already exists)
+      // Replaced alert() with showMessage()
+      showMessage(err?.response?.data?.error || 'Registration failed. Please try again.', 'error');
     }
   };
 
   return (
-    // Main container with a subtle background and pattern
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center p-6">
-      <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row transform transition-all duration-300 hover:scale-[1.01]">
+    // Full screen container to center the card. Uses a responsive, non-scrollable background.
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 sm:p-6">
+      
+      {/* Registration Card/Panel: Clean, rounded, minimal style */}
+      <div className="w-full max-w-sm p-8 space-y-6 bg-white rounded-2xl shadow-xl border border-gray-200">
         
-        {/* Left Section: Visual / Promotional (Indigo/Blue theme for contrast) */}
-        <div className="w-full md:w-1/2 p-10 flex flex-col justify-center items-center text-white bg-gradient-to-br from-indigo-500 to-blue-600 rounded-l-2xl">
-          <h2 className="text-4xl font-extrabold mb-4 text-center leading-tight">
-            Welcome Back!
-          </h2>
-          <p className="text-lg text-center opacity-90 mb-6 max-w-xs">
-            Enter your credentials to jump back into the Tic-Tac-Toe action and resume your challenges.
-          </p>
-          {/* Simple illustrative icon (using a lock/key icon for security/login) */}
-          <div className="p-4 bg-white bg-opacity-20 rounded-full">
-            <svg className="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2v5.5a4 4 0 01-8 0V9a2 2 0 012-2zm-5 4v.5m0 3V11m2-4V9a2 2 0 00-2-2z"/>
-            </svg>
+        {/* Title: Large, bold, centered, matching the desired aesthetic */}
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 text-center leading-snug">
+          Create Account for Tic-Tac-Toe
+        </h1>
+        
+        {/* Message Box (Intuitive feedback) */}
+        {message.text && (
+          <div className={`p-3 rounded-lg font-medium text-center ${
+            message.type === 'success' ? 'bg-green-100 text-green-700 border border-green-300' : 
+            'bg-red-100 text-red-700 border border-red-300'
+          }`}>
+            {message.text}
           </div>
-        </div>
+        )}
 
-        {/* Right Section: Login Form */}
-        <div className="w-full md:w-1/2 p-10 flex flex-col justify-center">
-          <h1 className="text-4xl font-extrabold text-gray-800 text-center mb-8">
-            Log In
-          </h1>
 
-          <form onSubmit={submit} className="space-y-6">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-              <input 
-                id="username"
-                value={username} 
-                onChange={e => setUsername(e.target.value)} 
-                required 
-                placeholder="Enter your username" 
-                className="w-full p-4 border border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition duration-150 ease-in-out text-gray-800 placeholder-gray-400" 
-                aria-label="Username input"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input 
-                id="password"
-                value={password} 
-                onChange={e => setPassword(e.target.value)} 
-                required 
-                type="password" 
-                placeholder="Enter your password" 
-                className="w-full p-4 border border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition duration-150 ease-in-out text-gray-800 placeholder-gray-400" 
-                aria-label="Password input"
-              />
-            </div>
-            
-            <button 
-              type="submit"
-              className="w-full py-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition duration-200 ease-in-out transform hover:-translate-y-0.5 active:translate-y-0 active:bg-indigo-800"
-            >
-              Go Play!
-            </button>
-          </form>
+        <form onSubmit={submit} className="space-y-4">
+          
+          {/* Username Input: Increased padding, soft corners, and focus ring */}
+          <input 
+            value={username} 
+            onChange={e => setUsername(e.target.value)} 
+            required 
+            placeholder="Choose Username" 
+            className="w-full p-4 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 focus:outline-none placeholder-gray-500 text-lg" 
+            aria-label="Choose Username"
+          />
+          
+          {/* Password Input: Increased padding, soft corners, and focus ring */}
+          <input 
+            value={password} 
+            onChange={e => setPassword(e.target.value)} 
+            required 
+            type="password" 
+            placeholder="Choose Password" 
+            className="w-full p-4 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 focus:outline-none placeholder-gray-500 text-lg" 
+            aria-label="Choose Password"
+          />
+          
+          {/* Register Button: Green primary action, large, bold, and responsive effects */}
+          <button 
+            type="submit"
+            className="w-full py-3 text-xl font-bold bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition duration-200 transform active:bg-green-800"
+          >
+            Start Playing!
+          </button>
+        </form>
 
-          {/* Registration Link */}
-          <div className="mt-8 text-center text-md text-gray-600">
-            No account? 
-            <Link to="/register" className="text-indigo-600 hover:text-indigo-800 font-semibold ml-2 transition duration-150">
-              Register here
-            </Link>
-          </div>
+        {/* Login Link: Centered, small text for consistency */}
+        <div className="pt-2 text-center text-md text-gray-600">
+          Already have an account? 
+          <Link to="/" className="text-blue-600 hover:text-blue-800 font-semibold ml-1 transition duration-150">
+            Login
+          </Link>
         </div>
       </div>
     </div>
