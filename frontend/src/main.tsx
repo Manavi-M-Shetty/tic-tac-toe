@@ -6,19 +6,23 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Lobby from './pages/Lobby';
 import Game from './pages/Game';
-import './styles/index.css';
+import './index.css'
+import './App.css'
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />}>
-          <Route index element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route path="lobby" element={<Lobby />} />
-          <Route path="game/:id" element={<Game />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/lobby" element={<App />}>
+          <Route index element={<Lobby />} />
+        </Route>
+        <Route path="/game/:id" element={<App />}>
+          <Route index element={<Game />} />
         </Route>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
 );
+
