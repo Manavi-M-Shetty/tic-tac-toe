@@ -1,12 +1,12 @@
 import express, { Response } from 'express';
 import db from '../db';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { randomUUID } from 'crypto';
 const router = express.Router();
 
 // Create a new game (waiting)
 router.post('/create', requireAuth, async (req: AuthRequest, res: Response) => {
-  const { v4: uuidv4 } = await import('uuid');
-  const id = uuidv4();
+  const id = randomUUID();
   const emptyBoard = '---------'; // 9 chars
   await db.query(`
     INSERT INTO games (id, player_x, player_o, status, board)
