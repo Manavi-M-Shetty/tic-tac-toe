@@ -28,7 +28,7 @@ export default function Register() {
     e.preventDefault(); // Prevent default form submission and page reload
     try {
       // 1. Call the registration endpoint
-      const r = await API.post('/auth/register', { username, password });
+      const r = await API.post('auth/register', { username, password });
       
       const token = r.data.token;
       
