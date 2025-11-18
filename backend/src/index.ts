@@ -20,6 +20,7 @@ app.use(cors({ origin: allowedOrigins}));
 app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
 
+
 const port = process.env.PORT || 4000;
 const server = http.createServer(app);
 const io = setupSocket(server, allowedOrigins);
