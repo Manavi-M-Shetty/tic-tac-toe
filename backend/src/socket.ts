@@ -21,10 +21,15 @@ function getUserIdFromToken(token: string): number | null {
   }
 }
 
-export default function setupSocket(httpServer: any, allowedOrigin: string) {
+export default function setupSocket(httpServer: any, allowedOrigins: string[]) {
   const io = new Server(httpServer, {
-    cors: { origin: allowedOrigin }
+    cors: {
+      origin: allowedOrigins,
+      methods: ["GET", "POST"],
+      credentials: true
+    }
   });
+
 
   io.on('connection', (socket: Socket) => {
     console.log('socket connected', socket.id);

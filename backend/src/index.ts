@@ -9,14 +9,20 @@ import setupSocket from './socket';
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://tic-tac-toe-frontend-gules.vercel.app",
+  "https://tic-tac-toe-frontend-7l3wrqdei-manavi-m-shettys-projects.vercel.app"
+];
+app.use(cors({ origin: allowedOrigins}));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
 
 const port = process.env.PORT || 4000;
 const server = http.createServer(app);
-const io = setupSocket(server, process.env.FRONTEND_URL || 'http://localhost:5173');
+const io = setupSocket(server, allowedOrigins);
 
 server.listen(port, () => {
   console.log(`Server listening on ${port}`);
