@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import API from '../services/api'; // Ensure this path is correct based on your file structure
+import API from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
 
 /**
@@ -22,10 +22,12 @@ function decodeToken(token: string) {
 export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const nav = useNavigate(); // Hook to change routes programmatically
+  const [isLoading, setIsLoading] = useState(false);
+  const nav = useNavigate();
 
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent default form submission and page reload
+    e.preventDefault();
+    setIsLoading(true);
     try {
       // 1. Call the registration endpoint
       const r = await API.post('auth/register', { username, password });
@@ -47,59 +49,123 @@ export default function Register() {
     } catch (err: any) {
       // Handle and display error from the backend (e.g., username already exists)
       alert(err?.response?.data?.error || 'Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    // Full screen container to center the registration form
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center p-4 relative overflow-hidden">
       
-      {/* Registration Card/Panel */}
-      <div className="w-full max-w-sm p-8 space-y-6 bg-white rounded-xl shadow-2xl">
-        
-        <h1 className="text-3xl font-extrabold text-gray-900 text-center">
-          Create Account for Tic-Tac-Toe
-        </h1>
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{ animationDelay: '4s' }}></div>
+      </div>
 
-        <form onSubmit={submit} className="space-y-4">
+      {/* Registration Card */}
+      <div className="w-full max-w-md relative">
+        <div className="bg-white backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-100 p-8 sm:p-10 space-y-8">
           
-          {/* Username Input */}
-          <input 
-            value={username} 
-            onChange={e => setUsername(e.target.value)} 
-            required 
-            placeholder="Choose Username" 
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 focus:outline-none" 
-            aria-label="Username"
-          />
-          
-          {/* Password Input */}
-          <input 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-            required 
-            type="password" 
-            placeholder="Choose Password" 
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 focus:outline-none" 
-            aria-label="Password"
-          />
-          
-          {/* Register Button */}
-          <button 
-            type="submit"
-            className="w-full px-4 py-3 text-lg font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 shadow-md active:bg-green-800"
-          >
-            Start Playing!
-          </button>
-        </form>
+          {/* Logo/Icon Section */}
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-20 h-20 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg transform transition-transform hover:scale-110 hover:rotate-3">
+              {/* Simple CSS X and O game icon */}
+              <div className="grid grid-cols-2 gap-1">
+                <div className="w-6 h-6 border-4 border-white rounded-full"></div>
+                <div className="w-6 h-6 relative">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-full h-1 bg-white transform rotate-45"></div>
+                    <div className="w-full h-1 bg-white transform -rotate-45 absolute"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="text-center">
+              <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                Join the Game
+              </h1>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base">Create your account and start playing!</p>
+            </div>
+          </div>
 
-        {/* Login Link */}
-        <div className="mt-6 text-center text-sm">
-          Already have an account? 
-          <Link to="/" className="text-blue-600 hover:text-blue-800 font-medium ml-1">
-            Login
-          </Link>
+          {/* Registration Form */}
+          <form onSubmit={submit} className="space-y-6">
+            
+            {/* Username Input */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700 ml-1 block">Username</label>
+              <input 
+                value={username} 
+                onChange={e => setUsername(e.target.value)} 
+                required 
+                placeholder="Choose your username" 
+                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none placeholder-gray-400 transition-all bg-gray-50 hover:bg-white hover:border-gray-300" 
+                aria-label="Username input"
+              />
+            </div>
+            
+            {/* Password Input */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700 ml-1 block">Password</label>
+              <input 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                required 
+                type="password" 
+                placeholder="Choose your password" 
+                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none placeholder-gray-400 transition-all bg-gray-50 hover:bg-white hover:border-gray-300" 
+                aria-label="Password input"
+              />
+              <p className="text-xs text-gray-500 ml-1">Must be at least 6 characters long</p>
+            </div>
+            
+            {/* Register Button */}
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3.5 text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center space-x-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Creating Account...</span>
+                </span>
+              ) : (
+                'Start Playing!'
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500 rounded-full">or</span>
+            </div>
+          </div>
+
+          {/* Login Link */}
+          <div className="text-center space-y-3">
+            <p className="text-sm text-gray-600">
+              Already have an account?
+            </p>
+            <Link 
+              to="/"
+              className="inline-block w-full py-3 text-base font-semibold text-green-600 bg-green-50 hover:bg-green-100 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
+            >
+              Login to Play
+            </Link>
+          </div>
         </div>
+
+        {/* Footer Text */}
+        <p className="text-center text-sm text-gray-600 mt-6 px-4">
+          By creating an account, you agree to our Terms of Service and Privacy Policy
+        </p>
       </div>
     </div>
   );
