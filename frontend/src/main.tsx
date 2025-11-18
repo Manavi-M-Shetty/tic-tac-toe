@@ -16,14 +16,25 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/lobby" element={<ProtectedRoute><App /></ProtectedRoute>}>
-          <Route index element={<Lobby />} />
-        </Route>
-        <Route path="/game/:id" element={<ProtectedRoute><App /></ProtectedRoute>}>
-          <Route index element={<Game />} />
-        </Route>
+
+        <Route
+          path="/lobby"
+          element={
+            <ProtectedRoute>
+              <Lobby />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/game/:id"
+          element={
+            <ProtectedRoute>
+              <Game />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
 );
-
