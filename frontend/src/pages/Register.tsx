@@ -136,7 +136,6 @@ export default function Register() {
                 aria-label="Password input"
                 className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none placeholder-gray-400 transition-all bg-gray-50 hover:bg-white hover:border-gray-300"
               />
-              <p className="text-xs text-gray-500 ml-1">Must be at least 6 characters long</p>
             </div>
 
             {/* Register Button */}
