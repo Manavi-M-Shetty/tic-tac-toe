@@ -1,42 +1,69 @@
+// Lobby.tsx
+// -----------------------------------------------------------------------------
+// This component represents the Game Lobby screen where users can:
+// - View all public waiting games
+// - Create a new public/private game
+// - Join a public game
+// - Join a private game using a game code
+// - Logout from the application
+// It interacts with the backend via authenticated API calls and displays
+// dynamic UI updates such as loading states, animations, and user messages.
+// -----------------------------------------------------------------------------
+
 import { useEffect, useState } from 'react';
 import API from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
+// Retrieve the JWT token from localStorage
 function getToken() {
   return localStorage.getItem('token') || '';
 }
 
+// Clear authentication info from localStorage
 function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('uid');
 }
 
 export default function Lobby() {
+  // List of public waiting games
   const [waiting, setWaiting] = useState<any[]>([]);
+
+  // Input for joining private game by code
   const [codeInput, setCodeInput] = useState('');
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | null }>({ text: '', type: null });
+
+  // UI message handler for success or error notifications
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | null }>({
+    text: '',
+    type: null
+  });
+
+  // Loading indicator for fetching public games
   const [isLoading, setIsLoading] = useState(false);
+
+  // Toggles the modal dialog for creating a game
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+
   const nav = useNavigate();
 
-  // Show success/error messages
+  // Display a temporary message for user feedback
   function showMessage(text: string, type: 'success' | 'error') {
     setMessage({ text, type });
     setTimeout(() => setMessage({ text: '', type: null }), 5000);
   }
 
-  // Fetch public waiting games
+  // Fetch list of waiting public games when the component mounts
   useEffect(() => {
     fetchWaiting();
   }, []);
 
+  // Fetch all public games that are waiting for players
   async function fetchWaiting() {
     setIsLoading(true);
     try {
-      const r = await API.get('/game/waiting', { 
-        headers: { Authorization: 'Bearer ' + getToken() } 
+      const r = await API.get('/game/waiting', {
+        headers: { Authorization: 'Bearer ' + getToken() }
       });
-      
       setWaiting(r.data);
     } catch (err: any) {
       showMessage(err?.response?.data?.error || 'Failed to fetch waiting games.', 'error');
@@ -45,10 +72,9 @@ export default function Lobby() {
     }
   }
 
-  // Create new game
+  // Create a new game (public or private)
   async function createGame(isPublic: boolean) {
     setShowCreateDialog(false);
-    
     try {
       const r = await API.post(
         "/game/create",
@@ -63,30 +89,39 @@ export default function Lobby() {
         "success"
       );
 
+      // Navigate user into the newly created game
       nav(`/game/${r.data.id}`);
     } catch (err: any) {
       showMessage(err?.response?.data?.error || "Failed to create game", "error");
     }
   }
 
-  // Join a public game
+  // Join a public game by its ID
   async function joinGame(id: string) {
     try {
-      await API.post(`/game/join/${id}`, {}, { headers: { Authorization: 'Bearer ' + getToken() } });
+      await API.post(
+        `/game/join/${id}`,
+        {},
+        { headers: { Authorization: 'Bearer ' + getToken() } }
+      );
       nav(`/game/${id}`);
     } catch (err: any) {
       showMessage(err?.response?.data?.error || 'Failed to join game', 'error');
     }
   }
 
-  // Join private game by code
+  // Join a private game using a code provided by another player
   async function joinByCode() {
     if (!codeInput.trim()) {
       showMessage('Please enter a game code.', 'error');
       return;
     }
     try {
-      const r = await API.post(`/game/join-code/${codeInput}`, {}, { headers: { Authorization: 'Bearer ' + getToken() } });
+      const r = await API.post(
+        `/game/join-code/${codeInput}`,
+        {},
+        { headers: { Authorization: 'Bearer ' + getToken() } }
+      );
       setCodeInput('');
       nav(`/game/${r.data.id}`);
     } catch (err: any) {
@@ -94,10 +129,21 @@ export default function Lobby() {
     }
   }
 
+  // -----------------------------------------------------------------------------
+  // UI Rendering
+  // All JSX below handles:
+  // - Animated background visuals
+  // - Logout button
+  // - Error/Success message alerts
+  // - Create Game dialog modal
+  // - Private game join section
+  // - Public games list with join actions
+  // -----------------------------------------------------------------------------
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-4 sm:p-6 lg:p-8 relative overflow-hidden">
       
-      {/* Animated background elements */}
+      {/* Animated gradient background bubbles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
@@ -106,11 +152,11 @@ export default function Lobby() {
 
       <div className="w-full max-w-6xl mx-auto relative">
 
-        {/* Header Section */}
+        {/* Header section with lobby title and logout button */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
           <div className="flex items-center space-x-4">
             <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              {/* Game icon */}
+              {/* Icon-like grid representation */}
               <div className="grid grid-cols-2 gap-0.5">
                 <div className="w-5 h-5 border-3 border-white rounded-full"></div>
                 <div className="w-5 h-5 relative">
@@ -129,6 +175,7 @@ export default function Lobby() {
             </div>
           </div>
           
+          {/* Logout button */}
           <button
             className="px-6 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
             onClick={() => { logout(); nav('/'); }}
@@ -137,7 +184,7 @@ export default function Lobby() {
           </button>
         </div>
 
-        {/* Messages */}
+        {/* Success/Error toast messages */}
         {message.text && (
           <div className={`p-4 rounded-xl font-medium text-center mb-6 shadow-lg transform transition-all duration-300 ${
             message.type === 'success' 
@@ -151,7 +198,7 @@ export default function Lobby() {
           </div>
         )}
 
-        {/* Action Buttons Card */}
+        {/* Action buttons: Create game + Refresh list */}
         <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <button
@@ -163,6 +210,8 @@ export default function Lobby() {
                 <span>Create New Game</span>
               </div>
             </button>
+
+            {/* Refresh waiting games */}
             <button
               className="px-6 py-4 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-xl shadow-md hover:shadow-lg hover:border-indigo-300 transition-all duration-200 transform hover:scale-105 active:scale-95"
               onClick={fetchWaiting}
@@ -183,7 +232,7 @@ export default function Lobby() {
           </div>
         </div>
 
-        {/* Create Game Dialog */}
+        {/* Game creation dialog modal */}
         {showCreateDialog && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all animate-scaleIn">
@@ -191,6 +240,7 @@ export default function Lobby() {
               <p className="text-gray-600 mb-6">Choose your game visibility</p>
               
               <div className="space-y-3">
+                {/* Public game option */}
                 <button
                   onClick={() => createGame(true)}
                   className="w-full p-5 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 text-left"
@@ -206,6 +256,7 @@ export default function Lobby() {
                   </div>
                 </button>
                 
+                {/* Private game option */}
                 <button
                   onClick={() => createGame(false)}
                   className="w-full p-5 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 text-left"
@@ -222,6 +273,7 @@ export default function Lobby() {
                 </button>
               </div>
               
+              {/* Close dialog */}
               <button
                 onClick={() => setShowCreateDialog(false)}
                 className="w-full mt-4 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all duration-200"
@@ -232,7 +284,7 @@ export default function Lobby() {
           </div>
         )}
 
-        {/* Join Private Game Card */}
+        {/* Section for joining private games */}
         <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-6 mb-6">
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
@@ -240,7 +292,9 @@ export default function Lobby() {
             </div>
             <h3 className="text-2xl font-bold text-gray-800">Join Private Game</h3>
           </div>
+
           <div className="flex flex-col sm:flex-row gap-3">
+            {/* Input for 6-digit code */}
             <input
               type="text"
               placeholder="Enter 6-digit Game Code"
@@ -249,6 +303,8 @@ export default function Lobby() {
               maxLength={6}
               className="flex-1 px-4 py-3.5 border-2 border-gray-200 rounded-xl text-lg font-mono font-bold tracking-widest uppercase focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none placeholder-gray-400 transition-all bg-gray-50 hover:bg-white"
             />
+
+            {/* Join button */}
             <button
               className="px-8 py-3.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 text-lg"
               onClick={joinByCode}
@@ -258,7 +314,7 @@ export default function Lobby() {
           </div>
         </div>
 
-        {/* Waiting Public Games Card */}
+        {/* Public waiting games list */}
         <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
@@ -270,12 +326,16 @@ export default function Lobby() {
                 <p className="text-sm text-gray-600">{waiting.length} game{waiting.length !== 1 ? 's' : ''} waiting</p>
               </div>
             </div>
+
+            {/* Count bubble */}
             <div className="px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full">
               <span className="text-indigo-700 font-bold text-lg">{waiting.length}</span>
             </div>
           </div>
           
+          {/* Scrollable list */}
           <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+            {/* No games case */}
             {waiting.length === 0 && !isLoading && (
               <div className="text-center py-12">
                 <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -286,13 +346,16 @@ export default function Lobby() {
               </div>
             )}
             
+            {/* Render list of public waiting games */}
             {waiting.map((g, index) => (
               <div 
-                key={g.id} 
+                key={g.id}
                 className="group p-5 bg-gradient-to-r from-white to-gray-50 hover:from-indigo-50 hover:to-purple-50 rounded-xl border-2 border-gray-200 hover:border-indigo-300 transition-all duration-200 shadow-sm hover:shadow-lg transform hover:scale-[1.02]"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+
+                  {/* Game code and host info */}
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
                       <div className="px-3 py-1 bg-indigo-100 rounded-lg">
@@ -305,12 +368,15 @@ export default function Lobby() {
                       <span>Host: <span className="font-semibold text-gray-700">Player {g.playerX}</span></span>
                     </div>
                   </div>
+
+                  {/* Join button for each public game */}
                   <button
                     className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105 active:scale-95 group-hover:from-green-600 group-hover:to-emerald-600"
                     onClick={() => joinGame(g.id)}
                   >
                     Join Now →
                   </button>
+
                 </div>
               </div>
             ))}
@@ -319,6 +385,7 @@ export default function Lobby() {
 
       </div>
 
+      {/* Background animation styles */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }

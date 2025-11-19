@@ -5,7 +5,7 @@ const { Pool } = pkg;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false } // Neon often needs SSL; if local PG remove this
+  ssl: { rejectUnauthorized: false } 
 });
 
 export default {
