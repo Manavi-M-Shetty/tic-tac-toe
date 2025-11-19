@@ -12,8 +12,8 @@ app.use(express.json());
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://tic-tac-toe-three-jade.vercel.app/",
-  "https://tic-tac-hhfkbkilu-manavi-m-shettys-projects.vercel.app/"
+  "https://tic-tac-toe-three-jade.vercel.app",
+  "https://tic-tac-hatyskd33-manavi-m-shettys-projects.vercel.app"
 ];
 app.use(cors({ origin: allowedOrigins}));
 
