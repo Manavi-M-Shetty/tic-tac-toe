@@ -199,7 +199,7 @@ export default function Game(){
           </div>
         </div>
 
-        {/* Game Status Card */}
+        {/* Game Status Cards */}
         <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-6">
           <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
             <span>📊</span>
