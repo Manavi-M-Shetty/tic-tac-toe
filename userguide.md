@@ -50,9 +50,8 @@ Navigate to: `tic-tac-toe-three-jade.vercel.app` in your web browser.
    - This will take you to the registration page
 
 3. **Fill in Registration Details**
-   - **Username**: Choose a unique username (this will be your display name)
-   - **Password**: Create a secure password (minimum 6 characters)
-   - Ensure your password meets the minimum length requirement
+   - **Username**: Choose a unique username
+   - **Password**: Create a secure password 
 
 4. **Submit Registration**
    - Click the "Start Playing!" button
